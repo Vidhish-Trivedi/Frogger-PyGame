@@ -44,7 +44,6 @@ class Player(pg.sprite.Sprite):
             self.pos += self.direction*self.speed*deltaTime
             self.rect.center = (round(self.pos.x), round(self.pos.y))
 
-
     def input(self):
         keyboard_keys = pg.key.get_pressed()
         # The order of these if/elif/else statements will determine if we can move diagonally or not (Detect simultaneous key presses).
@@ -67,8 +66,15 @@ class Player(pg.sprite.Sprite):
             self.direction.y = 0
 
     def animate_player(self, deltaTime):
-        self.frame_index += 8*deltaTime  # For speed of animations.
-        self.image = self.animations[self.move_dir][int(self.frame_index)%(len(self.animations[self.move_dir]))]
+        if(self.direction.magnitude() != 0):
+            self.frame_index += 10*deltaTime  # For speed of animations.
+            if(self.frame_index >= len(self.animations[self.move_dir])):
+                self.frame_index = 0  # Loop around: 012301230123...
+        
+        else:
+            self.frame_index = 0  # Standing position when not moving.
+
+        self.image = self.animations[self.move_dir][int(self.frame_index)]
 
     def update(self, deltaTime):
         self.input()

@@ -30,7 +30,7 @@ while(True):
             sys.exit()
 
     # Delta time.
-    dt = clk.tick(400)/1000
+    dt = clk.tick(120)/1000
 
     # Draw background.
     display_surface.fill("black")
