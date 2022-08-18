@@ -10,8 +10,9 @@ class Player(pg.sprite.Sprite):
         # Adding images for animations.
         self.import_assets()
         self.frame_index = 0
+        self.move_dir = 'right'
         
-        self.image = self.animations[self.frame_index]
+        self.image = self.animations['right'][self.frame_index]
         self.rect = self.image.get_rect(center=position)
 
         # Float based position
@@ -20,15 +21,21 @@ class Player(pg.sprite.Sprite):
         self.speed = 200
 
     def import_assets(self):
-        img_path = "./graphics/player/right/"
-        
-        # List comprehension.
-        self.animations = [pg.image.load(f"{img_path}{img}.png").convert_alpha() for img in range(4)]
-        
-        # For loop.
-        # self.animations = []
-        # for img in range(4):
-        #         self.animations.append(pg.image.load(f"{img_path}{img}.png").convert_alpha())
+        # Better Import, using os.walk() method.
+        main_path = "./graphics/player"
+        self.animations = {}  # Dictionary:
+        # (key, value) ==> key is direction (up, left, right, down) and value is list of pygame surfaces.
+        for (index, folder) in enumerate(walk(main_path)):
+            if(index == 0):
+                for subfolder in folder[1]:
+                    self.animations[subfolder] = []
+            else:
+                for file in folder[2]:
+                    subfolder = folder[0].split("\\")[::-1][0]
+                    img_path = main_path + "/" + subfolder + "/" + file
+                    # print(img_path)
+                    surf = pg.image.load(img_path).convert_alpha()
+                    self.animations[subfolder].append(surf)
 
     def move_player(self, deltaTime):
         if(self.direction.magnitude() != 0):
@@ -43,21 +50,25 @@ class Player(pg.sprite.Sprite):
         # The order of these if/elif/else statements will determine if we can move diagonally or not (Detect simultaneous key presses).
         if(keyboard_keys[pg.K_LEFT]):
             self.direction.x = -1
+            self.move_dir = 'left'
         elif(keyboard_keys[pg.K_RIGHT]):
             self.direction.x = 1
+            self.move_dir = 'right'
         else:
             self.direction.x = 0
 
         if(keyboard_keys[pg.K_UP]):
             self.direction.y = -1
+            self.move_dir = 'up'
         elif(keyboard_keys[pg.K_DOWN]):
             self.direction.y = 1
+            self.move_dir = 'down'
         else:
             self.direction.y = 0
 
     def animate_player(self, deltaTime):
         self.frame_index += 8*deltaTime  # For speed of animations.
-        self.image = self.animations[int(self.frame_index)%(len(self.animations))]
+        self.image = self.animations[self.move_dir][int(self.frame_index)%(len(self.animations[self.move_dir]))]
 
     def update(self, deltaTime):
         self.input()

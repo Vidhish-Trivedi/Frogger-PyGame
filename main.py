@@ -4,7 +4,6 @@ import settings as st
 from player import Player
 
 pg.init()
-# keyboard_keys = pg.key.get_pressed()
 
 # Create window.
 display_surface = pg.display.set_mode((st.WINDOW_WIDTH, st.WINDOW_HEIGHT))
@@ -14,14 +13,12 @@ pg.display.set_caption("Frogger")
 all_sprites = pg.sprite.Group()
 # pl_grp = pg.sprite.GroupSingle()
 
-
 # Create player.
 my_player = Player((st.WINDOW_WIDTH/2, st.WINDOW_HEIGHT/2), all_sprites)
 
 
 # Create clock to get delta time later.
 clk = pg.time.Clock()
-
 
 # Game loop.
 while(True):
