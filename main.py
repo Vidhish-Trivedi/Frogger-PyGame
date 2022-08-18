@@ -38,13 +38,11 @@ while(True):
     # Draw background.
     display_surface.fill("black")
 
-
     # Update.
     all_sprites.update(dt)
 
     # Draw.
     all_sprites.draw(display_surface)
-
 
     # Keep window displayed.
     pg.display.update()
