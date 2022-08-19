@@ -4,6 +4,7 @@ import random
 import settings as st
 from player import Player
 from car import Car
+from sprite import SimpleSprite, LongSprite
 
 pg.init()
 
@@ -12,23 +13,21 @@ class AllSprites(pg.sprite.Group):
     def __init__(self):
         super().__init__()
         self.offset = pg.math.Vector2()  # To shift view.
-        self.bg = pg.image.load('./graphics/main/map.png').convert()  # To be drawn below everything
+        self.bg = pg.image.load('./graphics/main/map.png').convert()
         self.fg = pg.image.load('./graphics/main/overlay.png').convert_alpha()
 
     def custom_draw(self):
-        # Change offset vector.
+
         self.offset.x = my_player.rect.centerx - st.WINDOW_WIDTH/2
         self.offset.y = my_player.rect.centery - st.WINDOW_HEIGHT/2
-        # Final offset should be negative, so that camera can move in opposite direction.
 
         display_surface.blit(self.bg, -self.offset)
         
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):  # ** Sorting by y-position, object with higher y-value is drawn over object with lower y-value.
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
             offset_pos = sprite.rect.center - self.offset
             display_surface.blit(sprite.image, offset_pos)
 
         display_surface.blit(self.fg, -self.offset)
-
 
 # Create window.
 display_surface = pg.display.set_mode((st.WINDOW_WIDTH, st.WINDOW_HEIGHT))
@@ -38,13 +37,24 @@ pg.display.set_caption("Frogger")
 all_sprites = AllSprites()  # Using our custom group class.
 
 # Create Instances.
-my_player = Player((st.WINDOW_WIDTH/2, st.WINDOW_HEIGHT/2), all_sprites)
+player_start_pos = (2062, 3274)
+my_player = Player(player_start_pos, all_sprites)
 car_list = []
 
 # Create timer(s).
 car_timer = pg.event.custom_type()
 pg.time.set_timer(car_timer, 80)
 
+# Sprite setup for level objects.
+for (file_name, pos_list) in st.SIMPLE_OBJECTS.items():
+    surf = pg.image.load(f"./graphics/objects/simple/{file_name}.png").convert_alpha()
+    for pos in pos_list:
+        new_sprite_object = SimpleSprite(surface=surf, position=pos, groups=all_sprites)
+
+for (file_name, pos_list) in st.LONG_OBJECTS.items():
+    surf = pg.image.load(f"./graphics/objects/long/{file_name}.png").convert_alpha()
+    for pos in pos_list:
+        new_sprite_object = LongSprite(surface=surf, position=pos, groups=all_sprites)
 
 # Create clock to get delta time later.
 clk = pg.time.Clock()

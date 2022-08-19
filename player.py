@@ -1,8 +1,6 @@
 import pygame as pg
 from os import walk  # Built-in, used to go through folders (returns file name).
 
-pg.init()
-
 class Player(pg.sprite.Sprite):
     def __init__(self, position, groups):
         super().__init__(groups)
