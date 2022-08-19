@@ -21,46 +21,45 @@ class Player(pg.sprite.Sprite):
 
         # For collisions.
         self.collision_objects = coll_grp
+        self.hitbox = self.rect.inflate(0, -self.rect.height/2) # For collisions while keeping overlap.
 
     def collision(self, direction):
-        # pg.sprite.spritecollide(self, self.collision_objects, True)
-    
-        # For more control for developer.
-        # for sprite in self.collision_objects.sprites():
-        #     if(sprite.rect.colliderect(self.rect)):  # Check for simple rect collision
-        #         # sprite.kill()
-
+        # Using hitbox for collisions instead of rect.
         if(direction == "horizontal"):
             for sprite in self.collision_objects.sprites():
-                if sprite.rect.colliderect(self.rect):  # There is a collision on either left or right side.
+                if sprite.hitbox.colliderect(self.hitbox):  # There is a collision on either left or right side.
                     if(hasattr(sprite, 'name') and sprite.name == "car"):  # Collision with car.
                         pg.quit()
                         print("Game Over!")
                         sys.exit()
                     
-                    elif(self.direction.x > 0):  # Collision on left side. (moving rightwards).
-                        self.rect.right = sprite.rect.left
-                        self.pos.x = self.rect.centerx  # To avoid ambiguity later in move_player() method.
+                    if(self.direction.x > 0):  # Collision on left side. (moving rightwards).
+                        self.hitbox.right = sprite.hitbox.left
+                        self.rect.centerx = self.hitbox.centerx  # To fix wobble on collision at high frame rates.
+                        self.pos.x = self.hitbox.centerx  # To avoid ambiguity later in move_player() method.
                     
-                    elif(self.direction.x < 0):  # Collision on right side. (moving leftwards).
-                        self.rect.left = sprite.rect.right
-                        self.pos.x = self.rect.centerx
+                    if(self.direction.x < 0):  # Collision on right side. (moving leftwards).
+                        self.hitbox.left = sprite.hitbox.right
+                        self.rect.centerx = self.hitbox.centerx
+                        self.pos.x = self.hitbox.centerx
             
         else:  # direction == "vertical"
             for sprite in self.collision_objects.sprites():
-                if sprite.rect.colliderect(self.rect):  # There is a collision on either top or bottom side.
+                if sprite.hitbox.colliderect(self.hitbox):  # There is a collision on either top or bottom side.
                     if(hasattr(sprite, 'name') and sprite.name == "car"):  # Collision with car.
                         pg.quit()
                         print("Game Over!")
                         sys.exit()
 
-                    elif(self.direction.y > 0):  # Collision on top side. (moving downwards).
-                        self.rect.bottom = sprite.rect.top
-                        self.pos.y = self.rect.centery  # To avoid ambiguity later in move_player() method.
+                    if(self.direction.y > 0):  # Collision on top side. (moving downwards).
+                        self.hitbox.bottom = sprite.hitbox.top
+                        self.rect.centery = self.hitbox.centery  # To fix wobble on collision at high frame rates.
+                        self.pos.y = self.hitbox.centery  # To avoid ambiguity later in move_player() method.
                     
-                    elif(self.direction.y < 0):  # Collision on bottom side. (moving upwards).
-                        self.rect.top = sprite.rect.bottom
-                        self.pos.y = self.rect.centery
+                    if(self.direction.y < 0):  # Collision on bottom side. (moving upwards).
+                        self.hitbox.top = sprite.hitbox.bottom
+                        self.rect.centery = self.hitbox.centery
+                        self.hitbox.y = self.hitbox.centery
 
     def import_assets(self):
         # Better Import, using os.walk() method.
@@ -82,25 +81,39 @@ class Player(pg.sprite.Sprite):
     def move_player(self, deltaTime):
         if(self.direction.magnitude() != 0):
             self.direction = self.direction.normalize()
-            # self.animate_player(deltaTime)  #######  Was a bug  #######
-
-            # self.pos += self.direction*self.speed*deltaTime
-            # self.rect.center = (round(self.pos.x), round(self.pos.y))
 
             # Seperating the horizontal and vertical movements, for collisions.
             # Horizontal movement.
             self.pos.x += self.direction.x*self.speed*deltaTime
-            self.rect.centerx = round(self.pos.x)
+            self.hitbox.centerx = round(self.pos.x)  # For collision.
+            self.rect.centerx = self.hitbox.centerx  # For update.
             # Horizontal collisions.
             self.collision("horizontal")
             
             # Vertical movement.
             self.pos.y += self.direction.y*self.speed*deltaTime
-            self.rect.centery = round(self.pos.y)
+            self.hitbox.centery = round(self.pos.y)  # For collision.
+            self.rect.centery = self.hitbox.centery  # For update.
             # Vertical collisions.
             self.collision("vertical")
+    
+    # self.rect and self.hitbox maintain the same center. [IMPORTANT].
 
+    def restrict(self):
+        if(self.rect.left < 620):
+            self.pos.x = 620 + self.rect.width/2
+            self.hitbox.left = 620
+            self.rect.left = 620
 
+        if(self.rect.right > 2540):
+            self.pos.x = 2540 - self.rect.width/2
+            self.hitbox.right = 2540
+            self.rect.right = 2540
+        
+        if(self.rect.bottom > 3480):
+            self.pos.y = 3480 - self.rect.height/2
+            self.rect.bottom = 3480
+            self.hitbox.centery = self.rect.centery  # As hitbox is a bit shorter than the rect.
 
     def input(self):
         keyboard_keys = pg.key.get_pressed()
@@ -137,4 +150,5 @@ class Player(pg.sprite.Sprite):
     def update(self, deltaTime):
         self.input()
         self.move_player(deltaTime)
-        self.animate_player(deltaTime)  # calling this method here fixes standing position bug.
+        self.animate_player(deltaTime)
+        self.restrict()

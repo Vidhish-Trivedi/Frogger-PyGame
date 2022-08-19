@@ -32,6 +32,7 @@ class AllSprites(pg.sprite.Group):
 # Create window.
 display_surface = pg.display.set_mode((st.WINDOW_WIDTH, st.WINDOW_HEIGHT))
 pg.display.set_caption("Frogger")
+player_won = False  # To check if player won.
 
 # Create groups.
 all_sprites = AllSprites()  # For updating and drawing.
@@ -56,6 +57,12 @@ for (file_name, pos_list) in st.LONG_OBJECTS.items():
     surf = pg.image.load(f"./graphics/objects/long/{file_name}.png").convert_alpha()
     for pos in pos_list:
         new_sprite_object = LongSprite(surface=surf, position=pos, groups=[all_sprites, obstacle_sprites])
+
+# Font.
+font1 = pg.font.Font(None, 50)  # Use Default font of pygame.
+txt_surf = font1.render("You Win!!!", True, "red", "yellow")
+txt_rect = txt_surf.get_rect(center=(st.WINDOW_WIDTH/2, st.WINDOW_HEIGHT/2))
+
 
 # Create clock to get delta time later.
 clk = pg.time.Clock()
@@ -83,33 +90,22 @@ while(True):
 
     # Draw background.
     display_surface.fill("black")
+    if(player_won):
+        display_surface.blit(txt_surf, txt_rect)
 
     # Update.
-    all_sprites.update(dt)
+    if(my_player.pos.y > 1180):
+        all_sprites.update(dt)
+        
+        # Draw.
+        all_sprites.custom_draw()
 
-    # Draw.
-    # all_sprites.draw(display_surface)
-    all_sprites.custom_draw()
+    else:
+        player_won = True
 
     # Keep window displayed.
     pg.display.update()
 
-##################################################################  COLLISIONS  ###################################################################
-# So far, we just checked overlaps for collisions.
-# Pygame can tell us if there is contact, we have to create our own collision logic.
-# Updating elements before drawing is crucial, as it is during update that we will use collision logic.
-
-# But, pygame only ever sees one frame at a time, so we don't have information about direction of approach.
-# We first move in the horizontal direction and resolve horizontal collisions,
-# then we move in the vertical direction and resolve vertical collisions.
-
-# We can do two things:
-# --> Direction: what we will do, easy to implement, but does not work when both objects are moving.  (for collisions of player with static objects).
-    # So, one of the two colliding bodies should be stationary.
-
-# --> Position: On every frame, we will store positions and compare them to positions in the next frame for both bodies, then check how they changed.
-    # Works for 2 moving bodies also, but is more difficult.
-
-# For collision of player with moving cars --> Game over scenario, so don't need proper collisions.
-
-####################################################################################################################################################
+#######################################  TO REGAIN OVERLAP WHILE KEEPING COLLISION LOGIC  ##############################
+# Every sprite will have 2 rects, one for position and another (smaller the the one for position) for collisions.
+########################################################################################################################
