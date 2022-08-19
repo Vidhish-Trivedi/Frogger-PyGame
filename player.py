@@ -1,8 +1,9 @@
 import pygame as pg
+import sys
 from os import walk  # Built-in, used to go through folders (returns file name).
 
 class Player(pg.sprite.Sprite):
-    def __init__(self, position, groups):
+    def __init__(self, position, groups, coll_grp):
         super().__init__(groups)
 
         # Adding images for animations.
@@ -17,6 +18,49 @@ class Player(pg.sprite.Sprite):
         self.pos = pg.math.Vector2(self.rect.center)
         self.direction = pg.math.Vector2((0, 0))
         self.speed = 200
+
+        # For collisions.
+        self.collision_objects = coll_grp
+
+    def collision(self, direction):
+        # pg.sprite.spritecollide(self, self.collision_objects, True)
+    
+        # For more control for developer.
+        # for sprite in self.collision_objects.sprites():
+        #     if(sprite.rect.colliderect(self.rect)):  # Check for simple rect collision
+        #         # sprite.kill()
+
+        if(direction == "horizontal"):
+            for sprite in self.collision_objects.sprites():
+                if sprite.rect.colliderect(self.rect):  # There is a collision on either left or right side.
+                    if(hasattr(sprite, 'name') and sprite.name == "car"):  # Collision with car.
+                        pg.quit()
+                        print("Game Over!")
+                        sys.exit()
+                    
+                    elif(self.direction.x > 0):  # Collision on left side. (moving rightwards).
+                        self.rect.right = sprite.rect.left
+                        self.pos.x = self.rect.centerx  # To avoid ambiguity later in move_player() method.
+                    
+                    elif(self.direction.x < 0):  # Collision on right side. (moving leftwards).
+                        self.rect.left = sprite.rect.right
+                        self.pos.x = self.rect.centerx
+            
+        else:  # direction == "vertical"
+            for sprite in self.collision_objects.sprites():
+                if sprite.rect.colliderect(self.rect):  # There is a collision on either top or bottom side.
+                    if(hasattr(sprite, 'name') and sprite.name == "car"):  # Collision with car.
+                        pg.quit()
+                        print("Game Over!")
+                        sys.exit()
+
+                    elif(self.direction.y > 0):  # Collision on top side. (moving downwards).
+                        self.rect.bottom = sprite.rect.top
+                        self.pos.y = self.rect.centery  # To avoid ambiguity later in move_player() method.
+                    
+                    elif(self.direction.y < 0):  # Collision on bottom side. (moving upwards).
+                        self.rect.top = sprite.rect.bottom
+                        self.pos.y = self.rect.centery
 
     def import_assets(self):
         # Better Import, using os.walk() method.
@@ -38,9 +82,25 @@ class Player(pg.sprite.Sprite):
     def move_player(self, deltaTime):
         if(self.direction.magnitude() != 0):
             self.direction = self.direction.normalize()
-            self.animate_player(deltaTime)
-            self.pos += self.direction*self.speed*deltaTime
-            self.rect.center = (round(self.pos.x), round(self.pos.y))
+            # self.animate_player(deltaTime)  #######  Was a bug  #######
+
+            # self.pos += self.direction*self.speed*deltaTime
+            # self.rect.center = (round(self.pos.x), round(self.pos.y))
+
+            # Seperating the horizontal and vertical movements, for collisions.
+            # Horizontal movement.
+            self.pos.x += self.direction.x*self.speed*deltaTime
+            self.rect.centerx = round(self.pos.x)
+            # Horizontal collisions.
+            self.collision("horizontal")
+            
+            # Vertical movement.
+            self.pos.y += self.direction.y*self.speed*deltaTime
+            self.rect.centery = round(self.pos.y)
+            # Vertical collisions.
+            self.collision("vertical")
+
+
 
     def input(self):
         keyboard_keys = pg.key.get_pressed()
@@ -77,7 +137,4 @@ class Player(pg.sprite.Sprite):
     def update(self, deltaTime):
         self.input()
         self.move_player(deltaTime)
-
-#################  ADJUST/NORMALIZE A VECTOR (OTHERWISE DIAGONAL SPEED WOULD BE SQRT(V1 + V2))  #####################
-# Meaning length of vector should be 1.
-#####################################################################################################################
+        self.animate_player(deltaTime)  # calling this method here fixes standing position bug.

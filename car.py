@@ -22,6 +22,7 @@ class Car(pg.sprite.Sprite):
             self.direction = pg.math.Vector2(-1, 0)
 
         self.speed = 200
+        self.name = "car"
 
     def import_assets(self):
         main_path = "./graphics/cars"

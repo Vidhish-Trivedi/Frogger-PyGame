@@ -34,11 +34,12 @@ display_surface = pg.display.set_mode((st.WINDOW_WIDTH, st.WINDOW_HEIGHT))
 pg.display.set_caption("Frogger")
 
 # Create groups.
-all_sprites = AllSprites()  # Using our custom group class.
+all_sprites = AllSprites()  # For updating and drawing.
+obstacle_sprites = pg.sprite.Group()  # Seperate group for checking collisions: (all_sprites - {my_player}).
 
 # Create Instances.
 player_start_pos = (2062, 3274)
-my_player = Player(player_start_pos, all_sprites)
+my_player = Player(player_start_pos, all_sprites, obstacle_sprites)  # obstacle_sprites needs to be passed as an argument.
 car_list = []
 
 # Create timer(s).
@@ -49,12 +50,12 @@ pg.time.set_timer(car_timer, 80)
 for (file_name, pos_list) in st.SIMPLE_OBJECTS.items():
     surf = pg.image.load(f"./graphics/objects/simple/{file_name}.png").convert_alpha()
     for pos in pos_list:
-        new_sprite_object = SimpleSprite(surface=surf, position=pos, groups=all_sprites)
+        new_sprite_object = SimpleSprite(surface=surf, position=pos, groups=[all_sprites, obstacle_sprites])
 
 for (file_name, pos_list) in st.LONG_OBJECTS.items():
     surf = pg.image.load(f"./graphics/objects/long/{file_name}.png").convert_alpha()
     for pos in pos_list:
-        new_sprite_object = LongSprite(surface=surf, position=pos, groups=all_sprites)
+        new_sprite_object = LongSprite(surface=surf, position=pos, groups=[all_sprites, obstacle_sprites])
 
 # Create clock to get delta time later.
 clk = pg.time.Clock()
@@ -73,9 +74,7 @@ while(True):
             car_pos = random.choice(st.CAR_START_POSITIONS)
             if(car_pos not in car_list):
                 car_list.append(car_pos)
-                # Can also do (random_x, random_y + random_y_offset) for more realistic car motion, like,
-                # car_list.append((car_pos[0], car_pos[1] + random.randint(-8, 8))) # and then later remove this. 
-                new_car = Car(car_pos, all_sprites)
+                new_car = Car(car_pos, [all_sprites, obstacle_sprites])
             if(len(car_list) > 5):
                 car_list.remove(car_list[0])
 
@@ -94,3 +93,23 @@ while(True):
 
     # Keep window displayed.
     pg.display.update()
+
+##################################################################  COLLISIONS  ###################################################################
+# So far, we just checked overlaps for collisions.
+# Pygame can tell us if there is contact, we have to create our own collision logic.
+# Updating elements before drawing is crucial, as it is during update that we will use collision logic.
+
+# But, pygame only ever sees one frame at a time, so we don't have information about direction of approach.
+# We first move in the horizontal direction and resolve horizontal collisions,
+# then we move in the vertical direction and resolve vertical collisions.
+
+# We can do two things:
+# --> Direction: what we will do, easy to implement, but does not work when both objects are moving.  (for collisions of player with static objects).
+    # So, one of the two colliding bodies should be stationary.
+
+# --> Position: On every frame, we will store positions and compare them to positions in the next frame for both bodies, then check how they changed.
+    # Works for 2 moving bodies also, but is more difficult.
+
+# For collision of player with moving cars --> Game over scenario, so don't need proper collisions.
+
+####################################################################################################################################################
