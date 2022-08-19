@@ -8,7 +8,6 @@ from sprite import SimpleSprite, LongSprite
 
 pg.init()
 
-# This AllSprites will work as any other pygame group, but we can customize it.
 class AllSprites(pg.sprite.Group):
     def __init__(self):
         super().__init__()
@@ -32,7 +31,7 @@ class AllSprites(pg.sprite.Group):
 # Create window.
 display_surface = pg.display.set_mode((st.WINDOW_WIDTH, st.WINDOW_HEIGHT))
 pg.display.set_caption("Frogger")
-player_won = False  # To check if player won.
+player_won = False
 
 # Create groups.
 all_sprites = AllSprites()  # For updating and drawing.
@@ -40,7 +39,7 @@ obstacle_sprites = pg.sprite.Group()  # Seperate group for checking collisions: 
 
 # Create Instances.
 player_start_pos = (2062, 3274)
-my_player = Player(player_start_pos, all_sprites, obstacle_sprites)  # obstacle_sprites needs to be passed as an argument.
+my_player = Player(player_start_pos, all_sprites, obstacle_sprites)
 car_list = []
 
 # Create timer(s).
@@ -59,10 +58,13 @@ for (file_name, pos_list) in st.LONG_OBJECTS.items():
         new_sprite_object = LongSprite(surface=surf, position=pos, groups=[all_sprites, obstacle_sprites])
 
 # Font.
-font1 = pg.font.Font(None, 50)  # Use Default font of pygame.
+font1 = pg.font.Font(None, 50)
 txt_surf = font1.render("You Win!!!", True, "red", "yellow")
 txt_rect = txt_surf.get_rect(center=(st.WINDOW_WIDTH/2, st.WINDOW_HEIGHT/2))
 
+# Music.
+bg_music = pg.mixer.Sound('./audio/music.mp3')
+bg_music.play(-1)  # Play in a loop.
 
 # Create clock to get delta time later.
 clk = pg.time.Clock()
@@ -77,7 +79,6 @@ while(True):
             sys.exit()
     
         if(event.type == car_timer):
-            # Logic to spawn cars so that they do not overlap (spawn at same location too quickly).
             car_pos = random.choice(st.CAR_START_POSITIONS)
             if(car_pos not in car_list):
                 car_list.append(car_pos)
@@ -89,8 +90,8 @@ while(True):
     dt = clk.tick(120)/1000
 
     # Draw background.
-    display_surface.fill("black")
     if(player_won):
+        display_surface.fill("teal")
         display_surface.blit(txt_surf, txt_rect)
 
     # Update.
@@ -105,7 +106,3 @@ while(True):
 
     # Keep window displayed.
     pg.display.update()
-
-#######################################  TO REGAIN OVERLAP WHILE KEEPING COLLISION LOGIC  ##############################
-# Every sprite will have 2 rects, one for position and another (smaller the the one for position) for collisions.
-########################################################################################################################

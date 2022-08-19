@@ -18,12 +18,12 @@ class Car(pg.sprite.Sprite):
             self.direction = pg.math.Vector2(1, 0)
         # Car moves left.
         elif(position[0] > 1080):
-            self.image = pg.transform.flip(self.image, True, False)  # Flip image.
+            self.image = pg.transform.flip(self.image, True, False)
             self.direction = pg.math.Vector2(-1, 0)
 
         self.speed = 200
         self.name = "car"
-        self.hitbox = self.rect.inflate(0, -self.rect.height/2) # For collisions while keeping overlap.
+        self.hitbox = self.rect.inflate(0, -self.rect.height/2)
 
     def import_assets(self):
         main_path = "./graphics/cars"
@@ -38,7 +38,5 @@ class Car(pg.sprite.Sprite):
         self.pos += self.direction*self.speed*deltaTime
         self.hitbox.center = (round(self.pos.x), round(self.pos.y))
         self.rect.center = self.hitbox.center
-        # self.rect and self.hitbox maintain the same center. [IMPORTANT].
-        # Remove cars outside 'map'.
-        if(self.rect.x < - 200 or self.rect.x > 3400):  # 3200 is width of entire map (Later, we will see camera will move).
+        if(self.rect.x < - 200 or self.rect.x > 3400):
             self.kill()

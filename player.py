@@ -1,6 +1,6 @@
 import pygame as pg
 import sys
-from os import walk  # Built-in, used to go through folders (returns file name).
+from os import walk
 
 class Player(pg.sprite.Sprite):
     def __init__(self, position, groups, coll_grp):
@@ -21,7 +21,7 @@ class Player(pg.sprite.Sprite):
 
         # For collisions.
         self.collision_objects = coll_grp
-        self.hitbox = self.rect.inflate(0, -self.rect.height/2) # For collisions while keeping overlap.
+        self.hitbox = self.rect.inflate(0, -self.rect.height/2)
 
     def collision(self, direction):
         # Using hitbox for collisions instead of rect.
@@ -74,7 +74,6 @@ class Player(pg.sprite.Sprite):
                 for file in folder[2]:
                     subfolder = folder[0].split("\\")[::-1][0]
                     img_path = main_path + "/" + subfolder + "/" + file
-                    # print(img_path)
                     surf = pg.image.load(img_path).convert_alpha()
                     self.animations[subfolder].append(surf)
 
@@ -96,8 +95,6 @@ class Player(pg.sprite.Sprite):
             self.rect.centery = self.hitbox.centery  # For update.
             # Vertical collisions.
             self.collision("vertical")
-    
-    # self.rect and self.hitbox maintain the same center. [IMPORTANT].
 
     def restrict(self):
         if(self.rect.left < 620):
