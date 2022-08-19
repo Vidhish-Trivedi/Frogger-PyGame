@@ -86,15 +86,16 @@ class Player(pg.sprite.Sprite):
             self.pos.x += self.direction.x*self.speed*deltaTime
             self.hitbox.centerx = round(self.pos.x)  # For collision.
             self.rect.centerx = self.hitbox.centerx  # For update.
-            # Horizontal collisions.
-            self.collision("horizontal")
             
             # Vertical movement.
             self.pos.y += self.direction.y*self.speed*deltaTime
             self.hitbox.centery = round(self.pos.y)  # For collision.
             self.rect.centery = self.hitbox.centery  # For update.
-            # Vertical collisions.
-            self.collision("vertical")
+        
+        # Horizontal collisions.
+        self.collision("horizontal")
+        # Vertical collisions.
+        self.collision("vertical")
 
     def restrict(self):
         if(self.rect.left < 620):
